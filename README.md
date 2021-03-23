@@ -1,67 +1,20 @@
 #below is the code that we inserted to fix this vulnerability
 
-<?php include("templates/page_header.php");?>
-<?php include("lib/auth.php") ?>
-
-<!doctype html>
-<h1>Hello</h1>
-
-<html lang="en">
-<head>
-	<title>Admin</title>
-	<?php include("templates/header.php"); ?>
-</head>
-<body>
-	<?php include("templates/nav.php"); ?>
-	<?php include("templates/contentstart.php"); ?>
-
-<h2>Article Management</h2>
-
-<p><button type="button" class="btn btn-primary" aria-label="Left Align" onclick="window.location='/newarticle.php';">
-New Post <span class="fa fa-plus" aria-hidden="true"></span>
-</button></p>
-
-<table class="table">
-<tr><th>Post Title</th><th>Author</th><th>Date</th><th>Modify</th><th>Delete</th></tr>
 <?php
-# get articles by user or, if role is admin, all articles
-        $result = get_article_list($dbconn);
-        while ($row = pg_fetch_array($result)) {
-    ?>
-<tr>
-<?php if($_SESSION['username']=='student'){    ?>
-<td><a href='article.php?aid=<?php echo $row['aid'] ?>'><?php echo htmlspecialchars($row['title'], ENT_QUOTES, 'UTF-8'); ?></a></td>
-  <td><?php echo $row['author'] ?></td>
-  <td><?php echo substr($row['date'],0,10) ?></td>
-  <td><a href="/editarticle.php?aid=<?php echo $row['aid'] ?>"><i class="fa fa-pencil-square-o fa-2x" aria-hidden="true"></i></a></td>
-  
-<?php if($row['author'] == 'student'){ ?>
-   <td><a href="/deletearticle.php?aid=<?php echo $row['aid'] ?>"><i class="fa fa-times fa-2x" aria-hidden="true"></i></a></td>
-<?php } ?>
+    session_start();
+    include("config.php");
+    include("lib/db.php");
+        /get session 'login attempts'/
+        if (!isset($_SESSION['login_attempts'])) {
+            $_SESSION['login_attempts'] = 0;
 
-<?php }elseif($_SESSION['username']=='admin'){ ?>
-  <td><a href='article.php?aid=<?php echo $row['aid'] ?>'><?php echo htmlspecialchars($row['title'], ENT_QUOTES, 'UTF-8'); ?></a></td>
-  <td><?php echo $row['author'] ?></td>
-  <td><?php echo substr($row['date'],0,10) ?></td>
-</tr>}
+            }
+        /increase login attempts counter/
+        $_SESSION['login_attempts']++;
+        /if session gets to 4 then a "TOO MANY ATTEMPTS" page pops up/
+        if($_SESSION['login_attempts'] > 4){
+        echo "TOO MANY ATTEMPTS";
+        exit();
+        }
 
-<?php if($_SESSION['username']=='student'){ ?>
-<?php    if($row['author']=='student'){ ?>
-  <td><a href="/editarticle.php?aid=<?php echo $row['aid'] ?>"><i class="fa fa-pencil-square-o fa-2x"> 
-<?php }else{ ?>
- <td><a href="/editarticle.?aid=<?php echo $row['aid'] ?>"><i class="fa fa-pencil-square-o fa-2x" aria-hidden="true"></i></a></td>
-<?php } ?>
-<?php } ?>
-<?php if($row['author']=='student'){    ?> 
-    <td><a href="/deletearticle.php?aid=<?php echo $row['aid'] ?>"><i class="fa fa-times fa-2x" aria-hidden="true"></i></a></td> 
-<?php } ?>
-<?php } ?>
-
-    <?php } //close while loop
 ?>
-</table>
-    <?php include("templates/contentstop.php"); ?>
-    <?php include("templates/footer.php"); ?>
-    <?php session_destroy();?>
-</body>
-</html>
