@@ -1,20 +1,25 @@
 #below is the code that we inserted to fix this vulnerability
 
-<?php
-    session_start();
-    include("config.php");
-    include("lib/db.php");
-        /get session 'login attempts'/
-        if (!isset($_SESSION['login_attempts'])) {
-            $_SESSION['login_attempts'] = 0;
+function csrfchecktoken(){
 
-            }
-        /increase login attempts counter/
-        $_SESSION['login_attempts']++;
-        /if session gets to 4 then a "TOO MANY ATTEMPTS" page pops up/
-        if($_SESSION['login_attempts'] > 4){
-        echo "TOO MANY ATTEMPTS";
-        exit();
-        }
+if($_REQUEST["csrftk"] !== $_SESSION["csrftk"]){
 
-?>
+unset($_SESSION["csrftk"]);
+die("Validation has failed.");
+
+}
+return true;
+}
+
+function gentoken(){
+
+if(!isset($_SESSION["csrftk"])){
+
+$token = md5(microtime());
+$_SESSION["csrftk"] = $token;
+
+}else{
+session_write_close();
+}
+return $token;
+}
