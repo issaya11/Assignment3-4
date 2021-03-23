@@ -1,42 +1,23 @@
 #below is the code that we inserted to fix this vulnerability
 
-version: '2'
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
 
-services:
+    root /code;
 
-  nginx:
-    image: nginx:latest
-    ports:
-      - "80:80"
-    volumes:
-      - ./code:/code
-      - ./site.conf:/etc/nginx/conf.d/site.conf
-    links:
-      - php
+    index index.php; 
 
-  php:
-    build: 
-      context: ./dockerfiles/php/
-      dockerfile: ./Dockerfile
-    volumes:
-        - ./code:/code
-    links:
-      - db
+    server_name 0.0.0.0;
+    charset utf-8;
 
-  db:
-    image: postgres:latest
-    restart: always
-    ports:
-      - "5432:5432"
-    volumes:
-      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
-      - ./schema.sql:/schema.sql
-      - ./data.sql:/data.sql
-    environment:
-      POSTGRES_PASSWORD: assignment1dbadmin
-
-  adminer:
-    image: adminer
-    restart: always
-    ports:
-      - "8081:8080"
+    location ~ .php$ {
+        try_files $uri =404;
+        fastcgi_split_path_info ^(.+.php)(/.+)$;
+        fastcgi_pass php:9000;
+        fastcgi_index index.php;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param PATH_INFO $fastcgi_path_info;
+    }
+}
