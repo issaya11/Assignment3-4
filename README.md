@@ -1,7 +1,25 @@
 #below is the code that we inserted to fix this vulnerability
 
-header("Location: /admin.php");
-                $date = date("Y-m-d H:i:s");
-                $name = $_POST['username'];
-                $logmsg = "  Log Information: name: " .$name ." date: " .$date;
-                file_put_contents("./assignment3-4_Andriy_Yahya.log", $logmsg, FILE_APPEND);
+function csrfchecktoken(){
+
+if($_REQUEST["csrftk"] !== $_SESSION["csrftk"]){
+
+unset($_SESSION["csrftk"]);
+die("Validation has failed.");
+
+}
+return true;
+}
+
+function gentoken(){
+
+if(!isset($_SESSION["csrftk"])){
+
+$token = md5(microtime());
+$_SESSION["csrftk"] = $token;
+
+}else{
+session_write_close();
+}
+return $token;
+}
